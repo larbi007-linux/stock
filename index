@@ -1,103 +1,131 @@
-import React, { useState } from 'react';
-import { LineChart, XAxis, YAxis, Line, CartesianGrid, Tooltip, Legend } from 'recharts';
-
-interface Product {
-  category: string;
-  name: string;
-  quantity: number;
-}
-
-interface Movement {
-  product: Product;
-  type: 'Entrée' | 'Sortie';
-  quantity: number;
-  date: string;
-}
-
-const categories = [
-  'Électricité',
-  'Luminaire',
-  'Jardinage',
-  'Outillage',
-  'Sanitaire',
-  'Quincaillerie',
-  'Peinture',
-  'Drougrie',
-  'Démarque',
-];
-
-const App = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [newProduct, setNewProduct] = useState<Product>({ category: '', name: '', quantity: 0 });
-  const [newMovement, setNewMovement] = useState<Movement>({ product: { category: '', name: '', quantity: 0 }, type: 'Entrée', quantity: 0, date: new Date().toISOString().split('T')[0] });
-
-  const handleAddProduct = () => {
-    setProducts([...products, newProduct]);
-    setNewProduct({ category: '', name: '', quantity: 0 });
-  };
-
-  const handleAddMovement = () => {
-    setMovements([...movements, newMovement]);
-    setNewMovement({ product: { category: '', name: '', quantity: 0 }, type: 'Entrée', quantity: 0, date: new Date().toISOString().split('T')[0] });
-  };
-
-  const handleSendMovements = () => {
-    const movementsCSV = movements.map(movement => `${movement.product.name};${movement.type};${movement.quantity};${movement.date}`).join('\n');
-    const a = document.createElement('a');
-    a.href = `mailto:?subject=Movements&body=${movementsCSV}`;
-    a.click();
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Gestion de stock</h1>
-      <div className="flex flex-wrap justify-between mb-4">
-        <div className="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-          <h2 className="text-xl font-bold mb-2">Ajouter un produit</h2>
-          <div className="flex flex-wrap justify-between mb-2">
-            <select className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" value={newProduct.category} onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}>
-              <option value="">Catégorie</option>
-              {categories.map(category => <option key={category} value={category}>{category}</option>)}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Stock</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestion de Stock</h1>
+    <form id="productForm">
+        <div class="form-group">
+            <label for="category">Catégorie:</label>
+            <select id="category" required>
+                <option value="">Sélectionnez</option>
+                <option value="Électricité">Électricité</option>
+                <option value="Luminaire">Luminaire</option>
+                <option value="Jardinage">Jardinage</option>
+                <option value="Outillage">Outillage</option>
+                <option value="Sanitaire">Sanitaire</option>
+                <option value="Quincaillerie">Quincaillerie</option>
+                <option value="Peinture">Peinture</option>
+                <option value="Drougrie">Drougrie</option>
+                <option value="Démarque">Démarque</option>
             </select>
-            <input className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" type="text" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nom" />
-            <input className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" type="number" value={newProduct.quantity} onChange={e => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value) })} placeholder="Quantité" />
-          </div>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleAddProduct}>Ajouter</button>
         </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-          <h2 className="text-xl font-bold mb-2">Ajouter un mouvement</h2>
-          <div className="flex flex-wrap justify-between mb-2">
-            <select className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" value={newMovement.product.category} onChange={e => setNewMovement({ ...newMovement, product: { ...newMovement.product, category: e.target.value } })}>
-              <option value="">Catégorie</option>
-              {categories.map(category => <option key={category} value={category}>{category}</option>)}
+        <div class="form-group">
+            <label for="productName">Nom du Produit:</label>
+            <input type="text" id="productName" required>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantité:</label>
+            <input type="number" id="quantity" required>
+        </div>
+        <div class="form-group">
+            <label for="movement">Mouvement:</label>
+            <select id="movement" required>
+                <option value="">Sélectionnez</option>
+                <option value="Entrée">Entrée</option>
+                <option value="Sortie">Sortie</option>
             </select>
-            <input className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" type="text" value={newMovement.product.name} onChange={e => setNewMovement({ ...newMovement, product: { ...newMovement.product, name: e.target.value } })} placeholder="Nom" />
-            <input className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" type="number" value={newMovement.quantity} onChange={e => setNewMovement({ ...newMovement, quantity: parseInt(e.target.value) })} placeholder="Quantité" />
-            <select className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" value={newMovement.type} onChange={e => setNewMovement({ ...newMovement, type: e.target.value as 'Entrée' | 'Sortie' })}>
-              <option value="Entrée">Entrée</option>
-              <option value="Sortie">Sortie</option>
-            </select>
-            <input className="w-full md:w-1/2 xl:w-1/3 mb-2 md:mb-0" type="date" value={newMovement.date} onChange={e => setNewMovement({ ...newMovement, date: e.target.value })} />
-          </div>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleAddMovement}>Ajouter</button>
         </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-          <h2 className="text-xl font-bold mb-2">Produits</h2>
-          <ul>
-            {products.map((product, index) => <li key={index!}>{product.name} ({product.quantity})</li>)}
-          </ul>
-        </div>
-        <div className="w-full md:w-1/2 xl:w-1/3 mb-4 md:mb-0">
-          <h2 className="text-xl font-bold mb-2">Mouvements</h2>
-          <ul>
-            {movements.map((movement, index) => <li key={index!}>{movement.product.name} ({movement.type}) - {movement.quantity} ({movement.date})</li>)}
-          </ul>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleSendMovements}>Envoyer les mouvements</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+        <button type="submit">Ajouter</button>
+    </form>
 
-export default App;
+    <h2>Mouvements</h2>
+    <table id="movementTable">
+        <thead>
+            <tr>
+                <th>Catégorie</th>
+                <th>Nom du Produit</th>
+                <th>Quantité</th>
+                <th>Mouvement</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <button onclick="exportToExcel()">Exporter en Excel</button>
+
+    <script>
+        const productForm = document.getElementById('productForm');
+        const movementTableBody = document.querySelector('#movementTable tbody');
+
+        productForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const category = document.getElementById('category').value;
+            const productName = document.getElementById('productName').value;
+            const quantity = document.getElementById('quantity').value;
+            const movement = document.getElementById('movement').value;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${category}</td>
+                <td>${productName}</td>
+                <td>${quantity}</td>
+                <td>${movement}</td>
+            `;
+            movementTableBody.appendChild(row);
+
+            productForm.reset();
+        });
+
+        function exportToExcel() {
+            let table = document.getElementById('movementTable');
+            let rows = Array.from(table.rows).map(row => 
+                Array.from(row.cells).map(cell => cell.textContent).join(',')
+            ).join('\n');
+
+            let csvContent = 'data:text/csv;charset=utf-8,' + rows;
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'mouvements.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Simuler l'envoi par email (remplacer par une intégration serveur réelle)
+            alert('Fichier Excel généré et prêt à être envoyé par e-mail.');
+        }
+    </script>
+</body>
+</html>
